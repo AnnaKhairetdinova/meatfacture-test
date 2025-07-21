@@ -21,20 +21,20 @@ class Order extends Model
         'user_uuid',
         'comment',
         'status',
-        'order_amount',
+        'amount',
     ];
 
     protected $casts = [
         'status' => OrderStatus::class,
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
         static::creating(function ($model) {
             if (empty($model->uuid)) {
-                $model->uuid = (string) Str::uuid();
+                $model->uuid = (string)Str::uuid();
             }
         });
     }

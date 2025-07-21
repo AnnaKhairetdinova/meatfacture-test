@@ -20,10 +20,10 @@ class OrderItem extends Model
         'order_uuid',
         'product_uuid',
         'quantity',
-        'price_at_order',
+        'price',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

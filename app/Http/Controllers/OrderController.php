@@ -2,36 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\OrderStatus;
 use App\Http\Requests\OrderRequest;
-use App\Models\Order;
-use App\Models\Product;
+use App\Services\OrderService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Random\RandomException;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        protected OrderService $orderService
+    ) {
+    }
+
     /**
-     * История заказов покупателя
+     * История заказов пользователя
      *
      * @param Request $request
      * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
-        $limit = $request->query('limit', 10);
-        $userUuid = $request->user()->uuid;
-        $orders = Order::where('user_uuid', $userUuid)->paginate($limit);
+        try {
+            $limit = $request->query('limit', 10);
+            $userUuid = $request->user()->uuid;
 
-        return response()->json([
-            'data' => $orders->items(),
-            'pagination' => [
-                'current_page' => $orders->currentPage(),
-                'pages' => $orders->lastPage(),
-                'total' => $orders->total(),
-            ],
-        ]);
+            $orders = $this->orderService->getOrdersByUserUuid($userUuid, $limit);
+
+            return response()->json([
+                'data' => $orders->items(),
+                'pagination' => [
+                    'current_page' => $orders->currentPage(),
+                    'last_page' => $orders->lastPage(),
+                    'total' => $orders->total(),
+                ],
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка при получении заказов',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -39,37 +51,31 @@ class OrderController extends Controller
      *
      * @param OrderRequest $request
      * @return JsonResponse
-     * @throws RandomException
      */
     public function store(OrderRequest $request): JsonResponse
     {
-        $userUuid = $request->user()->uuid;
-        $comment = $request->input('comment');
-        $products = $request->input('products', []);
-        $orderAmount = 0;
+        try {
+            $userUuid = $request->user()->uuid;
+            $products = $request->input('products', []);
+            $comment = $request->input('comment');
 
-        foreach ($products as $item) {
-            $product = Product::findOrFail($item['uuid']);
-            $orderAmount += $product->price * $item['quantity'];
+            $order = $this->orderService->createOrder($userUuid, $products, $comment);
+
+            return response()->json([
+                'uuid' => $order->uuid,
+                'status' => $order->status->value
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка при создании заказа',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $order = Order::create([
-            'user_uuid' => $userUuid,
-            'comment' => $comment,
-            'status' => OrderStatus::New,
-            'order_amount' => $orderAmount,
-        ]);
-
-        foreach ($products as $item) {
-            $product = Product::findOrFail($item['uuid']);
-
-            $order->orderItems()->create([
-                'product_uuid' => $product->uuid,
-                'quantity' => $item['quantity'],
-                'price_at_order' => $product->price,
-            ]);
-        }
-
-        return response()->json(['uuid' => $order->uuid], 201);
     }
 }

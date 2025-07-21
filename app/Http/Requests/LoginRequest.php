@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class OrderRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,10 +16,8 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'products' => 'required|array|min:1',
-            'products.*.uuid' => 'required|exists:products,uuid',
-            'products.*.quantity' => 'required|integer|min:1',
-            'comment' => 'nullable|string',
+            'phone' => 'required|string',
+            'password' => 'required|string|min:6',
         ];
     }
 

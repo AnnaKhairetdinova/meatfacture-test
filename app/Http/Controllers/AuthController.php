@@ -2,73 +2,97 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
+use Exception;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function __construct(
+        protected AuthService $authService
+    ) {
+    }
+
+    /**
+     * Регистрация пользователя
+     *
+     * @param RegisterRequest $request
+     * @return JsonResponse
+     */
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|unique:users',
-            'phone_number' => 'required|max:20',
-            'password' => 'required|min:6',
-            'name' => 'required|string'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
         try {
-            $user = User::create([
-                'email' => $request->email,
-                'phone_number' => $request->phone_number,
-                'password' => bcrypt($request->password),
-                'name' => $request->name
+            $userData = $request->validated();
+
+            $result = $this->authService->registerUser($userData);
+
+            return response()->json([
+                'token' => $result['token']
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка при регистрации',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Авторизация пользователя
+     *
+     * @param LoginRequest $request
+     * @return JsonResponse
+     */
+    public function login(LoginRequest $request): JsonResponse
+    {
+        try {
+            $validated = $request->validated();
+            $phone = $validated['phone'];
+            $password = $validated['password'];
+
+            $result = $this->authService->loginUser($phone, $password);
+
+            return response()->json([
+                'access_token' => $result['token'],
+                'expires_in' => auth('api')->factory()->getTTL() * 60
             ]);
-        } catch (\Exception $e) {
-            var_dump($e->getMessage());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка авторизации',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $token = JWTAuth::fromUser($user);
-
-
-        return response()->json([
-            'token' => $token
-        ], 201);
     }
 
-    public function login(Request $request)
+    /**
+     * Выход из системы
+     *
+     * @return JsonResponse
+     */
+    public function logout(): JsonResponse
     {
-        $credentials = $request->only('email', 'password');
-
-        if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        try {
+            $this->authService->logoutUser();
+            return response()->json();
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        return $this->respondWithToken($token);
-    }
-
-    public function logout()
-    {
-        auth('api')->logout();
-        return response()->json(['message' => 'Successfully logged out']);
-    }
-
-    public function refresh()
-    {
-        return $this->respondWithToken(auth('api')->refresh());
-    }
-
-    protected function respondWithToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60
-        ]);
     }
 }

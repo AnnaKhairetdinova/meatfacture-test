@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->uuid('uuid')->primary();
             $table->foreignUuid('user_uuid')->references('uuid')->on('users');
             $table->text('comment');
+            $table->decimal('amount', 10, 2);
             $table->string('status');
-            $table->decimal('order_amount', 10, 2);
             $table->timestamps();
         });
     }

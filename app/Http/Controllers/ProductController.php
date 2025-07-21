@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,17 +17,36 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $limit = $request->query('limit', 10);
+        try {
+            $limit = $request->query('limit', 10);
 
-        $products = Product::paginate($limit);
+            $products = Product::with('category')->paginate($limit);
 
-        return response()->json([
-            'data' => $products->items(),
-            'pagination' => [
-                'current_page' => $products->currentPage(),
-                'pages' => $products->lastPage(),
-                'total' => $products->total(),
-            ],
-        ]);
+            $productData = $products->map(function ($product) {
+                return [
+                    'id' => $product->uuid,
+                    'name' => $product->name,
+                    'description' => $product->description,
+                    'price' => $product->price,
+                    'category' => $product->category->name,
+                    'stock' => $product->stock,
+                ];
+            });
+
+            return response()->json([
+                'data' => $productData,
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'total' => $products->total(),
+                ],
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка при получении товаров',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

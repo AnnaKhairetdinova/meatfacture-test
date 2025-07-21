@@ -30,7 +30,7 @@
 			]
 		},
 		{
-			"name": "product Copy",
+			"name": "Auth",
 			"item": [
 				{
 					"name": "Register",
@@ -39,7 +39,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"anna@anna.ru\",\n    \"phone_number\": \"+71234567890\",\n    \"password\": \"123456\",\n    \"name\": \"Anna\"\n}",
+							"raw": "{\n    \"email\": \"anna@anna.ru\",\n    \"phone\": \"81234567890\",\n    \"password\": \"123456\",\n    \"name\": \"Anna\",\n    \"address\": \"Test\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -66,7 +66,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"anna@anna.ru\",\n    \"password\": \"123456\"\n}",
+							"raw": "{\n    \"phone\": \"81234567890\",\n    \"password\": \"123456\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -99,6 +99,16 @@
 						}
 					},
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2xvZ2luIiwiaWF0IjoxNzUzMTA0MzU5LCJleHAiOjE3NTMxMDc5NTksIm5iZiI6MTc1MzEwNDM1OSwianRpIjoiSkM1a2JSOVN2MmFvUHNtUSIsInN1YiI6IjNiYjQxMzQwLTA2ZTEtNGZiYi05N2ExLTBjMmMyMzI5ZjBlMCIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.MIVpUGQ6tdguQ12D6KOuTZ8Jex7elXw7prHk8CndiwQ",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -109,7 +119,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user_id\": 1,\n    \"products\": [\n        {\n            \"id\": 1,\n            \"quantity\": 2\n        }\n    ]\n}   ",
+							"raw": "{\n    \"comment\": \"Пожалуйста, позвоните перед доставкой\",\n    \"products\": [\n        {\n            \"uuid\": \"77d3fc5d-b0a0-4d7f-a19e-f44d89b5bac3\",\n            \"quantity\": 97\n        }\n    ]\n}   ",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -117,13 +127,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/api/create-order",
+							"raw": "{{url}}/api/orders",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"api",
-								"create-order"
+								"orders"
 							]
 						}
 					},
@@ -140,7 +150,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2xvZ2luIiwiaWF0IjoxNzUyODU3MjEwLCJleHAiOjE3NTI4NjA4MTAsIm5iZiI6MTc1Mjg1NzIxMCwianRpIjoiY1hwUVVOQjB4c2Nia09qOCIsInN1YiI6IjFjMWYwMTQ1LWM3NzEtNDc0Yi1iMjBmLWU3OWNkZDE2YzE2ZiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.G6kKOcoSJ8Hpm-doxCIPFMUYXORk51nUpKRgGub-CwY",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2xvZ2luIiwiaWF0IjoxNzUzMTA0MzU5LCJleHAiOjE3NTMxMDc5NTksIm5iZiI6MTc1MzEwNDM1OSwianRpIjoiSkM1a2JSOVN2MmFvUHNtUSIsInN1YiI6IjNiYjQxMzQwLTA2ZTEtNGZiYi05N2ExLTBjMmMyMzI5ZjBlMCIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.MIVpUGQ6tdguQ12D6KOuTZ8Jex7elXw7prHk8CndiwQ",
 									"type": "string"
 								}
 							]

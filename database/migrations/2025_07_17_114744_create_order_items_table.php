@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->foreignUuid('order_uuid')->references('uuid')->on('orders');
             $table->foreignUuid('product_uuid')->references('uuid')->on('products');
             $table->integer('quantity');
-            $table->decimal('price_at_order', 10, 2);
+            $table->decimal('price', 10, 2);
         });
     }
 
